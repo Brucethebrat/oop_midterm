@@ -548,5 +548,5 @@ int main(int argc, char* args[])
 	//close file
 	fclose(map_default);
 
-	return 0;
+	return 0;  
 }
