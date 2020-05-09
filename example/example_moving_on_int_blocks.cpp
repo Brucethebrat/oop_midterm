@@ -547,6 +547,6 @@ int main(int argc, char* args[])
 	closeSDL();
 	//close file
 	fclose(map_default);
-
+	 
 	return 0;
 }
