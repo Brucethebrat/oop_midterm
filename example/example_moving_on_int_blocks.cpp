@@ -418,7 +418,7 @@ int main(int argc, char* args[])
 	char imgPath1[100] = "../images/sp.png";
 	char imgPath2[100] = "../images/rob.png";  
 		  
-	char kissPath[100] = "../images/kiss.png";GGGGG
+	char kissPath[100] = "../images/kiss.png";
 	char piestarPath[100] = "../images/piestar.png";	
 	char spongePath[100] = "../images/spongebob.png";
 	*/
