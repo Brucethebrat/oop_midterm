@@ -15,8 +15,43 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="example_moving_on_int_blocks.cpp">
+    <ClCompile Include="example_moving_on_int_blocks_ver3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="character.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tile.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="room.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="character.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

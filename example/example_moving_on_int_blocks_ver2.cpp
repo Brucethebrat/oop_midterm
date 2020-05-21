@@ -10,6 +10,7 @@
 const int WIDTH = 750;
 const int HEIGHT = 500;
 const int CH01_FRAME = 16;
+const int BLOCKNUM = 3;
 
 const int VELOCITY = 5;
 const int CH01_WIDTH = 50;
@@ -18,9 +19,10 @@ const int CH01_HEIGHT = 100;
 //Initialize the velocity, position and direction
 int CH01_VELX = 0;
 int CH01_VELY = 0;
-int CH01_POSX = 0;//WIDTH / 2;
-int CH01_POSY = 0;//HEIGHT / 2;
+int CH01_POSX = 350;	//WIDTH / 2; 375
+int CH01_POSY = 200;	//HEIGHT / 2; 225
 int DIRECTION = 0;	//0: face downward, 1: face left, 2: face right, 3: face upward
+//int DISTANCE = 0;	//when moving, if DISTANCE hasn't reach 50, then keep walking
 
 //when true, timer run, when false, timer stop, used in handle event, when moving: true, stop: false
 bool TIMER_SWITCH = false;
@@ -57,6 +59,7 @@ void imgRender(SDL_Renderer *renderer, ImageData img, int posX, int posY, int fr
 Uint32 aniAction(Uint32 interval, void* param); // Timer callback function
 void handleEvent(SDL_Event& e);
 void move();
+void show_map(FILE **map_default, ImageData blocks[BLOCKNUM]);
 
 
 SDL_Window *window = NULL; // The window we'll be rendering to
@@ -80,7 +83,7 @@ int initSDL()
 
 	// Create window	
 	// SDL_WINDOWPOS_UNDEFINED: Used to indicate that you don't care what the window position is.
-	window = SDL_CreateWindow("OOP SDL Tutorial", 50, 50, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Blue Demon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == NULL)
 	{
 		printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
@@ -211,13 +214,13 @@ void imgRender(SDL_Renderer *renderer, ImageData img, int posX, int posY, int fr
 Uint32 aniAction(Uint32 interval, void *param)
 {
 	int *index = (int *)param;
-	printf("switch in timer = %d\n", TIMER_SWITCH);
+	//printf("switch in timer = %d\n", TIMER_SWITCH);
 	if (TIMER_SWITCH) {
 		//index[1] = (index[1] + 1) % PFRAME;
 		//index[2] = (index[2] + 1) % SFRAME;
 		index[2] = (index[2] + 1) % (CH01_FRAME / 4) + DIRECTION * 4;
-		printf("index[2] = %d", index[2]);
-		printf("direction = %d", DIRECTION);
+		//printf("index[2] = %d", index[2]);
+		//printf("direction = %d", DIRECTION);
 
 		return interval;
 	}
@@ -231,7 +234,7 @@ Uint32 aniAction(Uint32 interval, void *param)
 
 void handleEvent(SDL_Event& e)
 {
-	/* The method for "Debunce"(反彈跳時間) */
+	// The method for "Debunce"(反彈跳時間) 
 
 	// If a key was pressed
 	// repeat: non-zero if this is a key repeat
@@ -286,28 +289,139 @@ void handleEvent(SDL_Event& e)
 }
 
 
-void move()
+
+void move(char matrix[10][15])
 {
-	//Move the dot left or right
-	CH01_POSX += CH01_VELX;
+	if (matrix[(CH01_POSY+40)/50][(CH01_POSX +CH01_VELX) / 50] == '1') {
+		//printf("Left/Right: (%d,%d)_%c -> (%d,%d)_%c\n", CH01_POSX, CH01_POSY, matrix[CH01_POSY / 50][CH01_POSX / 50], (CH01_POSX + CH01_VELX), CH01_POSY, matrix[(CH01_POSY) / 50][(CH01_POSX + CH01_VELX) / 50]);
+		//Move the dot left or right
+		CH01_POSX += CH01_VELX;
+		/*if (!TIMER_SWITCH && CH01_POSX % 50 != 0) {
+			if (DIRECTION == 1)
+				CH01_POSX -= VELOCITY;
+			else if (DIRECTION == 2)
+				CH01_POSX += VELOCITY;
+		}*/
+	}
 
 	//If the dot went too far to the left or right
-	if ((CH01_POSX <= 0) || (CH01_POSX + CH01_WIDTH >= WIDTH))//2 是為了留一點空間給左邊的牆壁
+	/*if ((CH01_POSX < 0) || (CH01_POSX + CH01_WIDTH > WIDTH))//2 是為了留一點空間給左邊的牆壁
 	{
 		//Move back
 		CH01_POSX -= CH01_VELX;
+	}*/
+
+	//Move back
+	if (CH01_POSX < 0)
+		CH01_POSX = 0;
+	else if (CH01_POSX + CH01_WIDTH > WIDTH)
+		CH01_POSX = WIDTH - CH01_WIDTH;
+
+	if (matrix[(CH01_POSY +CH01_VELY+40) / 50][CH01_POSX / 50] == '1') {
+		//printf("UP/DOWN: (%d,%d)_%c -> (%d,%d)_%c\n", CH01_POSX, CH01_POSY, matrix[CH01_POSY / 50][CH01_POSX / 50], CH01_POSX, CH01_POSY + CH01_VELY, matrix[(CH01_POSY + CH01_VELY) / 50][CH01_POSX / 50]);
+		//Move the dot up or down
+		CH01_POSY += CH01_VELY;
+		/*if (!TIMER_SWITCH && CH01_POSY % 50 != 0) {
+			if (DIRECTION == 0)
+				CH01_POSY += VELOCITY;
+			else if (DIRECTION == 3)
+				CH01_POSY -= VELOCITY;
+		}*/
 	}
-
-	//Move the dot up or down
-	CH01_POSY += CH01_VELY;
-
 	//If the dot went too far up or down
-	if ((CH01_POSY <= 0) || (CH01_POSY + CH01_HEIGHT >= HEIGHT)) //53 是CH01的實際高度，留一點空間在CH01與底部之間
+	/*if ((CH01_POSY < 0) || (CH01_POSY + CH01_HEIGHT > HEIGHT)) //53 是CH01的實際高度，留一點空間在CH01與底部之間
 	{
 		//Move back
 		CH01_POSY -= CH01_VELY;
+	}*/
+	if (CH01_POSY < 0) 
+		CH01_POSY = 50;
+	else if (CH01_POSY + CH01_HEIGHT+50 > HEIGHT)
+		CH01_POSY = HEIGHT- CH01_HEIGHT-50;
+}
+
+///*
+void show_map(char matrix[10][15], ImageData blocks[BLOCKNUM]) {
+	int bg;
+	int i = -50;
+	int j = 0;
+	for (int j = 0; j < 10; j++)
+		for (int i = 0; i < 15; i++) {
+			if (matrix[j][i] == '1') {
+				imgRender(renderer, blocks[0], i * 50, j * 50, 0);
+				//printf("put floor:(%d,%d)\t",i,j);
+				//printf("put floor");
+			}
+			else if (matrix[j][i] == '2') {
+				imgRender(renderer, blocks[1], i * 50, j * 50, 0);
+				//printf("put wall");
+			}
+			else if (matrix[j][i] == '3') {
+				imgRender(renderer, blocks[2], i * 50, j * 50, 0);
+				//printf("put door");
+			}
+		}
+	//SDL_RenderPresent(renderer);
+}
+//*/
+/*
+void show_map(SDL_Renderer *renderer, FILE **map_default, ImageData blocks[BLOCKNUM]) {
+	char bg;
+	int i = -50;
+	int j = 0;
+	SDL_Rect src, dst;
+
+	while ((bg = fgetc(*map_default)) != EOF) {
+		printf("%c\t", bg);
+		if (bg != (' ') && bg != '\n') {
+			i += 50;
+			if (i >= WIDTH)	j += 50, i = 0;
+			//printf("(%d, %d) = %c\n", i, j, bg);
+		}
+		if (bg == '1') {
+			//imgRender(renderer, blocks[0], i, j, 0);
+			src.x = 0;
+			src.y = 0;
+			src.w = blocks[0].width;
+			src.h = blocks[0].height;
+			dst.x = i;
+			dst.y = j;
+			dst.w = src.w;
+			dst.h = src.h;
+			SDL_RenderCopy(renderer, blocks[0].texture, &src, &dst);
+
+			//printf("put floor:(%d,%d)\t",i,j);
+			printf("put floor");
+		}
+		else if (bg == '2') {
+			//imgRender(renderer, blocks[1], i, j, 0);
+			src.x = 0;
+			src.y = 0;
+			src.w = blocks[1].width;
+			src.h = blocks[1].height;
+			dst.x = i;
+			dst.y = j;
+			dst.w = src.w;
+			dst.h = src.h;
+			SDL_RenderCopy(renderer, blocks[1].texture, &src, &dst);
+			printf("put wall");
+		}
+		else if (bg == '3') {
+			//imgRender(renderer, blocks[2], i, j, 0);
+			src.x = 0;
+			src.y = 0;
+			src.w = blocks[2].width;
+			src.h = blocks[2].height;
+			dst.x = i;
+			dst.y = j;
+			dst.w = src.w;
+			dst.h = src.h;
+			SDL_RenderCopy(renderer, blocks[2].texture, &src, &dst);
+			printf("put door");
+		}
 	}
 }
+*/
 
 
 // When using SDL, you have to use "int main(int argc, char* args[])"
@@ -317,21 +431,31 @@ int main(int argc, char* args[])
 	// The working directory is where the vcxproj file is located.
 	/*
 	char imgPath1[100] = "../images/sp.png";
-	char imgPath2[100] = "../images/rob.png";
-		
+	char imgPath2[100] = "../images/rob.png";  
+		  
 	char kissPath[100] = "../images/kiss.png";
 	char piestarPath[100] = "../images/piestar.png";	
 	char spongePath[100] = "../images/spongebob.png";
 	*/
-	char imgPath2[100] = "../images/rob.png";
-
+	//主角
 	char ch01Path[100] = "../images/character01_pictures_37x53.png";
 	int animationIndex[3] = { 0,0,0 };
 	
+	//map
+	/*
+	char floor_path[100] = "../images/floor.jpg";
+	char wall_path[100] = "../images/wall.jpg";
+	char door_path[100] = "../images/door.jpg";
+	*/
+	//make blocks in an array, easier to pass to function
+	char block_paths[BLOCKNUM][100] = { "../images/floor.jpg", "../images/wall.jpg", "../images/door.jpg" };
+	char map_path[100] = "../map/default.txt";
 
-	ImageData sp, rob;
+
 	ImageData ch01;//, sponge, kiss, pie;
-	//ImageData ku[FRAME];
+	//ImageData floor, wall, door;
+	ImageData blocks[BLOCKNUM];
+
 
 	// Start up SDL and create window
 	if (initSDL())
@@ -339,18 +463,40 @@ int main(int argc, char* args[])
 		printf("Failed to initialize SDL!\n");
 		return -1;
 	}
-	/*
-	sp = loadTexture(imgPath1, 1, 1, 1, true, 0xFF, 0xFF, 0xFF);
-	rob = loadTexture(imgPath2, 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
-	
-	kiss = loadTexture(kissPath, KFRAME, 5, 6, true, 0xFF, 0xFF, 0xFF);
-	pie = loadTexture(piestarPath, PFRAME, 3, 4, true, 0xFF, 0xFF, 0xFF);
-	sponge = loadTexture(spongePath, SFRAME, 3, 4, true, 0xFF, 0xFF, 0xFF);
-	*/
-	//ch01 = loadTexture(ch01Path, CH01_FRAME, 4, 4, true, 0xFF, 0xFF, 0xFF);
-	ch01 = loadTexture(ch01Path, CH01_FRAME, 4, 4, true, NULL, NULL, NULL);
-	rob = loadTexture(imgPath2, 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
 
+	//ch01 = loadTexture(ch01Path, CH01_FRAME, 4, 4, true, 0xFF, 0xFF, 0xFF);
+	ch01 = loadTexture(ch01Path, CH01_FRAME, 4, 4, false, NULL, NULL, NULL);
+	/*
+	floor = loadTexture(floor_path, 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
+	wall = loadTexture(wall_path, 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
+	door = loadTexture(door_path, 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
+	*/
+	for (int x = 0; x < 3; x++) {
+		blocks[x] = loadTexture(block_paths[x], 1, 1, 1, false, 0xFF, 0xFF, 0xFF);
+	}
+
+
+	FILE *map_default;
+	errno_t err;
+	err = fopen_s(&map_default, map_path, "r");
+	if (map_default == NULL) {
+		printf("fail to open map");
+		return 1;
+	}
+	int i = 0, j = 0;
+	char bg;
+	char map_array[10][15];	// since reading the file only read once, so we need an matrix to save the data
+	while ((bg = fgetc(map_default)) != EOF) {
+		if (bg != ' ' && bg != '\n') {
+			map_array[i][j] = bg;
+			j++;
+		}
+		else if (bg == '\n') {
+			i++; 
+			j = 0;
+		}
+		else{}
+	}
 
 	SDL_TimerID timerID_ku = SDL_AddTimer(150, aniAction, &animationIndex);
 
@@ -372,7 +518,7 @@ int main(int argc, char* args[])
 				quit = true;
 			}
 
-			// Handle input for the dot
+			// Handle input for the CH01
 			handleEvent(e);
 		}
 				
@@ -380,20 +526,19 @@ int main(int argc, char* args[])
 		// Clear screen
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 		SDL_RenderClear(renderer);
-		/*
-		imgRender(renderer, rob, 0, 0, 0);		
-		imgRender(renderer, sp, WIDTH / 2 - sp.width / 2, 100, 0);
-				
-		imgRender(renderer, kiss, 0, 300, animationIndex[0]);
-		imgRender(renderer, pie, 250, 300, animationIndex[1]);
-		//imgRender(renderer, sponge, 500, 300, animationIndex[2]);
-		*/
-		imgRender(renderer, rob, 0, 0, 0);
 
-		move();
+		//show map
+		//show_map(renderer, &map_default, blocks);
+		show_map(map_array, blocks);
+		//imgRender(renderer, blocks[0], 50, 50, 0);
+
+		move(map_array);
 		//imgRender(renderer, ch01, CH01_POSX + (CH01_WIDTH - ch01.width) / 2, CH01_POSY + (CH01_HEIGHT - ch01.height) / 2, animationIndex[2]);
-		imgRender(renderer, ch01, CH01_POSX, CH01_POSY, animationIndex[2]);
-
+		//imgRender(renderer, ch01, CH01_POSX + (CH01_WIDTH - ch01.width / 4) / 2, CH01_POSY + (CH01_HEIGHT - ch01.height / 4) / 4 * 3, animationIndex[2]);
+		imgRender(renderer, ch01, CH01_POSX + (CH01_WIDTH - ch01.width / 4) / 2, CH01_POSY-10 , animationIndex[2]);
+		//imgRender(renderer, ch01, CH01_POSX, CH01_POSY, animationIndex[2]);
+		//printf("CH01_WIDTH = %d, ch01.width = %d\n", CH01_WIDTH, ch01.width);
+		//printf("CH01_HEIGHT = %d, ch01.height = %d\n", CH01_HEIGHT, ch01.height);
 
 		// Update screen
 		SDL_RenderPresent(renderer);
@@ -401,6 +546,8 @@ int main(int argc, char* args[])
 
 	//Free resources and close SDL
 	closeSDL();
+	//close file
+	fclose(map_default);
 
-	return 0;
+	return 0;  
 }

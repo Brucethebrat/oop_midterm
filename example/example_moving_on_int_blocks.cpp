@@ -59,7 +59,7 @@ void imgRender(SDL_Renderer *renderer, ImageData img, int posX, int posY, int fr
 Uint32 aniAction(Uint32 interval, void* param); // Timer callback function
 void handleEvent(SDL_Event& e);
 void move();
-void show_map(FILE **map_default, ImageData blocks[BLOCKNUM]);
+void show_map(char matrix[10][15], ImageData blocks[BLOCKNUM]);
 
 
 SDL_Window *window = NULL; // The window we'll be rendering to
@@ -242,7 +242,6 @@ void handleEvent(SDL_Event& e)
 	//if (e.type == SDL_KEYDOWN)
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 	{
-		
 		//Adjust the velocity
 		switch (e.key.keysym.sym)
 		{
@@ -250,11 +249,11 @@ void handleEvent(SDL_Event& e)
 				//if ((CH01_POSY <= 0) || (CH01_POSY + CH01_HEIGHT >= HEIGHT)) //53 是CH01的實際高度，留一點空間在CH01與底部之間
 				//	TIMER_SWITCH = false; break;
 				TIMER_SWITCH = true;
-				CH01_VELY -= VELOCITY; 
+				CH01_VELY -= VELOCITY;
 				DIRECTION = 3;
 				//printf("uping SWITCH = %d\n", TIMER_SWITCH);
-				break; 
-			case SDLK_DOWN: 
+				break;
+			case SDLK_DOWN:
 				//if ((CH01_POSY <= 0) || (CH01_POSY + CH01_HEIGHT >= HEIGHT)) //53 是CH01的實際高度，留一點空間在CH01與底部之間
 				//	TIMER_SWITCH = false; break;
 				TIMER_SWITCH = true;
@@ -263,12 +262,12 @@ void handleEvent(SDL_Event& e)
 				break;
 			case SDLK_LEFT:
 				TIMER_SWITCH = true;
-				CH01_VELX -= VELOCITY; 
+				CH01_VELX -= VELOCITY;
 				DIRECTION = 1;
 				break;
 			case SDLK_RIGHT:
 				TIMER_SWITCH = true;
-				CH01_VELX += VELOCITY; 
+				CH01_VELX += VELOCITY;
 				DIRECTION = 2;
 				break;
 		}
@@ -310,6 +309,7 @@ void move()
 		//Move back
 		CH01_POSY -= CH01_VELY;
 	}
+
 	if (!TIMER_SWITCH && CH01_POSY % 50 != 0) {
 		if (DIRECTION == 0)
 			CH01_POSY += VELOCITY;
